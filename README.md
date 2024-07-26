@@ -22,4 +22,4 @@
   The provided notebook is organized as a workflow of subsequent tasks.
 
 ##### GPU-Support
-  Since extensive training over a considerable number of iterations (epochs) demands vast computional power it is advisable and practical to rely on GPU (or other      resources that offer accelarted computations).
+  Since extensive training over a considerable number of iterations (epochs) demands vast computional power it is advisable and practical to rely on GPU (or other      resources that offer accelerated computations).
