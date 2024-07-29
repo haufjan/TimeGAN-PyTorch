@@ -22,6 +22,6 @@
   The provided notebook is organized in chapters of subsequent tasks. It aims at presenting the complex framework in a simple and comprehensible way.
 
 ##### GPU-Support
-  Since extensive training over a considerable number of iterations (epochs) demands vast computional power it is advisable and practical to rely on GPU (or other    resources that offer accelerated computations).
+  As extensive training over a considerable number of iterations (epochs) demands vast computional power it is advisable and practical to rely on GPU (or other       resources that offer accelerated computations).
 
   For example, Google Colab (https://colab.research.google.com/) grants limited access to GPU resources free of charge.
