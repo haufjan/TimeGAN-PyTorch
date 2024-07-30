@@ -1,5 +1,5 @@
 # TimeGAN-PyTorch
-  Unofficial implementation of the original TimeGAN (Yoon et al., NIPS 2019) using PyTorch.
+  Unofficial implementation of TimeGAN (Yoon et al., NIPS 2019) in PyTorch.
 
   Full reference of the authors' work:
   
