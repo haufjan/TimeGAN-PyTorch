@@ -18,6 +18,9 @@
 
   https://github.com/jsyoon0823/TimeGAN.git
 
+### Results
+![result_pca](../assets/pca.png)
+
 ### Notebook
   The provided notebook is organized in chapters of subsequent tasks. It aims at presenting the complex framework in a simple and comprehensible way.
 
