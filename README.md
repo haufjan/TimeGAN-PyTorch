@@ -19,11 +19,9 @@
   https://github.com/jsyoon0823/TimeGAN.git
 
 ### Results
+  The model was trained on the data set "stock_data.csv" (Yoon et al., NIPS 2019).
 
-##### Distribution Estimate (PCA)
 ![result_pca](../assets/pca.png)
-
-##### Distribution Estimate (TSNE)
 ![result_tsne](../assets/tsne.png)
 
 ### Notebook
