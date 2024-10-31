@@ -1,3 +1,4 @@
+import itertools
 from itertools import chain
 import numpy as np
 import torch
@@ -6,26 +7,21 @@ from torch.utils.data import DataLoader, TensorDataset
 import sklearn
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
+import tqdm
 from tqdm import tqdm
 
 
 
-device = (
-    'cuda'
-    if torch.cuda.is_available()
-    else 'mps'
-    if torch.backends.mps.is_available()
-    else 'cpu'
-)
-
+#Define post-hoc discriminator
 class discriminator(nn.Module):
-    def __init__(self, input_features, hidden_dim, epochs, batch_size):
+    def __init__(self, input_features, hidden_dim, epochs, batch_size, device):
         super().__init__()
         self.input_features = input_features
         self.hidden_dim = hidden_dim
         self.num_layers = 1
         self.epochs = epochs
         self.batch_size = batch_size
+        self.device = device
 
         self.rnn = nn.GRU(input_size=input_features, hidden_size=hidden_dim, num_layers=self.num_layers, batch_first=True)
         self.model = nn.Linear(hidden_dim, 1)
@@ -40,14 +36,14 @@ class discriminator(nn.Module):
         return y_hat_logit, y_hat
 
     def fit(self, x, x_hat):
-        """Train the model"""
+        """Train model"""
         #Split data into train and test fractions
         x_train, x_test, x_hat_train, x_hat_test = train_test_split(x, x_hat, test_size=0.2)
 
-        x_train, x_hat_train = tensor(x_train, dtype=torch.float32, device=device), tensor(x_hat_train, dtype=torch.float32, device=device)
+        x_train, x_hat_train = tensor(x_train, dtype=torch.float32, device=self.device), tensor(x_hat_train, dtype=torch.float32, device=self.device)
         dataset_train = TensorDataset(x_train, x_hat_train)
 
-        x_test, x_hat_test = tensor(x_test, dtype=torch.float32, device=device, requires_grad=False), tensor(x_hat_test, dtype=torch.float32, device=device, requires_grad=False)
+        x_test, x_hat_test = tensor(x_test, dtype=torch.float32, device=self.device, requires_grad=False), tensor(x_hat_test, dtype=torch.float32, device=self.device, requires_grad=False)
 
         for itt in tqdm(range(self.epochs)):
             batches = DataLoader(dataset_train, batch_size=self.batch_size, shuffle=True)
@@ -60,9 +56,9 @@ class discriminator(nn.Module):
                 y_logit_fake, y_pred_fake = self.forward(x_hat)
 
                 d_loss_real = torch.mean(self.loss_fn(y_logit_real,
-                                                      torch.ones_like(y_logit_real, dtype=torch.float32, device=device, requires_grad=False)))
+                                                      torch.ones_like(y_logit_real, dtype=torch.float32, device=self.device, requires_grad=False)))
                 d_loss_fake = torch.mean(self.loss_fn(y_logit_fake,
-                                                      torch.zeros_like(y_logit_fake, dtype=torch.float32, device=device, requires_grad=False)))
+                                                      torch.zeros_like(y_logit_fake, dtype=torch.float32, device=self.device, requires_grad=False)))
 
                 d_loss = d_loss_real + d_loss_fake
 
@@ -82,7 +78,7 @@ class discriminator(nn.Module):
 
         return discriminative_score
 
-def discriminative_score_metrics(ori_data, generated_data):
+def discriminative_score_metrics(ori_data: np.ndarray, generated_data: np.ndarray, device: str):
     """Use post-hoc RNN to classify original data and synthetic data
 
     Args:
@@ -95,14 +91,10 @@ def discriminative_score_metrics(ori_data, generated_data):
     no, seq_len, dim = ori_data.shape
 
     hidden_dim = int(dim/2)
-    if hidden_dim == 0:
-        hidden_dim = 1
     iterations = 2000
     batch_size = 128
 
-    print(f'Using {device} device')
-
-    model = discriminator(input_features=dim, hidden_dim=hidden_dim, epochs=iterations, batch_size=batch_size).to(device)
+    model = discriminator(input_features=dim, hidden_dim=hidden_dim, epochs=iterations, batch_size=batch_size, device=device).to(device)
 
     discriminative_score = model.fit(ori_data, generated_data)
 
