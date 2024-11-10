@@ -48,7 +48,7 @@ def main(args):
     #Discriminative score
     discriminative_score = []
     for _ in range(args.metric_iteration):
-        temp_disc = discriminative_score_metrics(data_train, data_gen)
+        temp_disc = discriminative_score_metrics(data_train, data_gen, device)
         discriminative_score.append(temp_disc)
     
     metric_results['discriminative'] = np.mean(discriminative_score)
@@ -56,7 +56,7 @@ def main(args):
     #Predictive score
     predictive_score = []
     for _ in range(args.metric_iteration):
-        temp_pred = predictive_score_metrics(data_train, data_gen)
+        temp_pred = predictive_score_metrics(data_train, data_gen, device)
         predictive_score.append(temp_pred)
     
     metric_results['predictive'] = np.mean(predictive_score)
