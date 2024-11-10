@@ -26,7 +26,7 @@ def main(args):
     data = load_datatset(args.data)
 
     #Preprocessing
-    data_train, max_val, min_val = preprocessing((data, True), horizon=args.seq_len)
+    data_train, max_val, min_val = preprocessing((data, True), sequence_length=args.seq_len)
 
     #Instantiate TimeGAN model
     model = TimeGAN(input_features=data_train.shape[-1],

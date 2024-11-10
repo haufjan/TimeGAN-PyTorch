@@ -6,7 +6,7 @@ from sklearn.utils import shuffle
 
 
 #Define preprocessing routine
-def preprocessing(*inputs: tuple, horizon: int, shuffle_stack: bool = True, random_state: int = None) -> np.ndarray:
+def preprocessing(*inputs: tuple, sequence_length: int, shuffle_stack: bool = True, random_state: int = None) -> np.ndarray:
     """Conduct preprocessing: scale data, slice data into sequences and shuffle data stack.
     Consistent shuffling between multiple data stacks must be performed separetaly."""
     return_list = []
@@ -17,8 +17,8 @@ def preprocessing(*inputs: tuple, horizon: int, shuffle_stack: bool = True, rand
             data = scaler.transform(data)
             print('\nMaximum values:\n', scaler.data_max_, '\nMinimum values:\n', scaler.data_min_)
 
-        #Create a list holding the sequences defined by sliding window of width = horizon and stack to a 3-dimensional array (batch, horizon, feature)
-        data_stack = np.stack([data[i:i+horizon] for i in range(len(data) - horizon)])
+        #Create list of sequences from sliding window operation defined by sequence_length and stack to a 3-dimensional array (batch, sequence_length, feature)
+        data_stack = np.stack([data[i:i+sequence_length] for i in range(len(data) - sequence_length)])
 
         if shuffle_stack:
             #In TimeGAN code the data set is mixed to make it similar to independent and identically distributed (iid)
