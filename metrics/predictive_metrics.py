@@ -23,7 +23,7 @@ class predictor(nn.Module):
         self.batch_size = batch_size
         self.device = device
 
-        self.rnn = nn.GRU(input_size=dim, hidden_size=hidden_dim, num_layers=self.num_layers, batch_first=True)
+        self.rnn = nn.GRU(input_size=dim-1, hidden_size=hidden_dim, num_layers=self.num_layers, batch_first=True)
         self.model = nn.Sequential(nn.Linear(self.hidden_dim, 1), nn.Sigmoid())
         self.loss_fn = nn.L1Loss()
         self.optimizer = torch.optim.Adam(chain(self.rnn.parameters(), self.model.parameters()), 1e-3)
@@ -67,7 +67,6 @@ class predictor(nn.Module):
 
             for i in range(len(pred_test)):
                 MAE =+ mean_absolute_error(y_test[i,:,:].cpu().detach().numpy(), pred_test[i,:,:].cpu().detach().numpy())
-                break
 
         return MAE
 
