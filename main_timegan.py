@@ -1,7 +1,7 @@
 import argparse
 import numpy as np
 import torch
-from data_loading import load_datatset
+from data_loading import load_dataset
 from timegan import TimeGAN
 from metrics.discriminative_metrics import discriminative_score_metrics
 from metrics.predictive_metrics import predictive_score_metrics
@@ -23,7 +23,7 @@ def main(args):
     print(f'Using {device} device')
 
     #Load data from file
-    data = load_datatset(args.data)
+    data = load_dataset(args.data)
 
     #Preprocessing
     data_train, max_val, min_val = preprocessing((data, True), sequence_length=args.seq_len)

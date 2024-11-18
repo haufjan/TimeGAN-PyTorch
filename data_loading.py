@@ -1,21 +1,33 @@
+import numpy as np
 import pandas as pd
 
 
 
 #Define function for loading benchmark data sets
-def load_datatset(*files: str) -> pd.DataFrame:
+def load_dataset(*files: str) -> pd.DataFrame:
     """Load benchmark data set from csv file."""
     return_list = []
     for file in files:
         path = f'{file}' if file.endswith('csv') else f'{file}.csv'
         if path.endswith('stock_data.csv'):
             #Flip data for chronological order
-            data = pd.read_csv(path)[::-1]
+            data = np.asarray(pd.read_csv(path))[::-1]
         elif path.endswith('energy_data.csv'):
-            data = pd.read_csv(path)
+            data = np.asarray(pd.read_csv(path))
+        else:
+            #Sine 
+            #no, dim = (10000, 5)
+            temp = []
+            for k in range(5):
+                #Randomly drawn freqeuncy and phase
+                freq = np.random.uniform(0, 0.1)
+                phase = np.random.uniform(0, 0.1)
+
+                temp.append([np.sin(freq*j + phase) for j in range(10000)])               
+
+            data = np.stack(np.transpose(np.asarray(temp)))
+
         return_list.extend([data])
-        # else:
-        #     #Sine
     
     return return_list if len(return_list) > 1 else return_list.pop()
 
