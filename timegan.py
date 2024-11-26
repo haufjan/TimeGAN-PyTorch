@@ -108,7 +108,7 @@ def discriminator_loss(y_real, y_fake, y_fake_e):
     d_loss_fake = nn.BCEWithLogitsLoss()(y_fake, fake)
     d_loss_fake_e = nn.BCEWithLogitsLoss()(y_fake_e, fake)
 
-    return d_loss_real + d_loss_fake + d_loss_fake_e * gamma
+    return d_loss_real + d_loss_fake + d_loss_fake_e*gamma
 
 def generator_loss(y_fake, y_fake_e, h, h_hat_supervise, x, x_hat):
     gamma = 1
@@ -119,20 +119,20 @@ def generator_loss(y_fake, y_fake_e, h, h_hat_supervise, x, x_hat):
     g_loss_u_e = nn.BCEWithLogitsLoss()(y_fake_e, fake)
 
     #2. Supervised loss
-    g_loss_s = nn.MSELoss()(h[:,1:,:], h_hat_supervise[:,:-1,:])
+    g_loss_s = nn.MSELoss()(h_hat_supervise[:,:-1,:], h[:,1:,:])
 
     #3. Two moments
-    g_loss_v1 = torch.mean(torch.abs(torch.std(x_hat, dim=0) - torch.std(x, dim=0)))
+    g_loss_v1 = torch.mean(torch.abs(torch.sqrt(torch.std(x_hat, dim=0)) - torch.sqrt(torch.std(x, dim=0))))
     g_loss_v2 = torch.mean(torch.abs(torch.mean(x_hat, dim=0) - torch.mean(x, dim=0)))
     g_loss_v = g_loss_v1 + g_loss_v2
 
-    return g_loss_u + gamma * g_loss_u_e + 100 * torch.sqrt(g_loss_s) + 100 * g_loss_v
+    return g_loss_u + gamma*g_loss_u_e + 100*torch.sqrt(g_loss_s) + 100*g_loss_v
 
 def embedder_loss(x, x_tilde):
-    return 10*torch.sqrt(nn.MSELoss()(x, x_tilde))
+    return 10*torch.sqrt(nn.MSELoss()(x_tilde, x))
 
 def generator_loss_supervised(h, h_hat_supervise):
-    return nn.MSELoss()(h[:,1:,:], h_hat_supervise[:,:-1,:])
+    return nn.MSELoss()(h_hat_supervise[:,:-1,:], h[:,1:,:])
 
 
 
