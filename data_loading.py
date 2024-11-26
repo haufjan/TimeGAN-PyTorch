@@ -4,7 +4,7 @@ import pandas as pd
 
 
 #Define function for loading benchmark data sets
-def load_dataset(*files: str) -> pd.DataFrame:
+def load_dataset(*files: str) -> np.array:
     """Load benchmark data set from csv file."""
     return_list = []
     for file in files:
@@ -15,11 +15,10 @@ def load_dataset(*files: str) -> pd.DataFrame:
         elif path.endswith('energy_data.csv'):
             data = np.asarray(pd.read_csv(path))
         else:
-            #Sine 
-            #no, dim = (10000, 5)
+            #Sine signal
             temp = []
             for k in range(5):
-                #Randomly drawn freqeuncy and phase
+                #Randomly drawn frequency and phase
                 freq = np.random.uniform(0, 0.1)
                 phase = np.random.uniform(0, 0.1)
 
