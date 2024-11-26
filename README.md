@@ -1,8 +1,6 @@
 # TimeGAN-PyTorch
 Unofficial implementation of TimeGAN (Yoon et al., NIPS 2019) in PyTorch.
 
-Full reference of the authors' work:
-
 Jinsung Yoon, Daniel Jarrett, Mihaela van der Schaar, 
 "Time-series Generative Adversarial Networks," 
 Neural Information Processing Systems (NeurIPS), 2019
