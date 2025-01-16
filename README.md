@@ -5,7 +5,7 @@ Jinsung Yoon, Daniel Jarrett, Mihaela van der Schaar,
 "Time-series Generative Adversarial Networks," 
 Neural Information Processing Systems (NeurIPS), 2019
 
-Original TimeGAN codebase: https://github.com/jsyoon0823/TimeGAN.git
+Original Codebase: https://github.com/jsyoon0823/TimeGAN.git
 
 ### Data Set Reference
 -  Stock data: https://finance.yahoo.com/quote/GOOG/history?p=GOOG
