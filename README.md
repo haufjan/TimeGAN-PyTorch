@@ -37,6 +37,6 @@ py main_timegan.py --data=data/stock_data.csv --seq_len=24 --module=gru --hidden
 1. **Visualization**
 
 <p float="left">
-  <img src="../assets/pca.png" alt="PCA plot" width="500" />
-  <img src="../assets/tsne.png" alt=="TSNE plot" width="500" />
+  <img src="../assets/pca.png" alt="PCA plot" width="400" />
+  <img src="../assets/tsne.png" alt=="TSNE plot" width="400" />
 </p>
