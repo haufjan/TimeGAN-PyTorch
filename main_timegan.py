@@ -11,7 +11,13 @@ from utils import preprocessing
 
 
 def main(args):
-    """Main function"""
+    """
+    Main function
+    """
+    #Random seeds
+    np.random.seed(42)
+    torch.seed(42)
+
     #Check available device
     device = (
     'cuda'
