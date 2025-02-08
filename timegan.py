@@ -87,10 +87,7 @@ class Discriminator(nn.Module):
             self.rnn = nn.LSTM(input_size=hidden_dim, hidden_size=hidden_dim, num_layers=num_layers, bidirectional=True, batch_first=True)
         else:
             raise Exception()
-        #Bidirectional true
         self.model = nn.Linear(2*hidden_dim, 1)
-        #Bidirectional false
-        # self.model = nn.Linear(hidden_dim, 1)
 
     def forward(self, x):
         seq, _ = self.rnn(x)
