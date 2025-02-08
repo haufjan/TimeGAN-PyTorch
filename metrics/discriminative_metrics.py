@@ -16,6 +16,7 @@ from tqdm import tqdm
 class discriminator(nn.Module):
     def __init__(self, input_features, hidden_dim, epochs, batch_size, device):
         super().__init__()
+        #Parameters
         self.input_features = input_features
         self.hidden_dim = hidden_dim
         self.num_layers = 1
@@ -23,11 +24,16 @@ class discriminator(nn.Module):
         self.batch_size = batch_size
         self.device = device
 
+        #Layers
         self.rnn = nn.GRU(input_size=input_features, hidden_size=hidden_dim, num_layers=self.num_layers, batch_first=True)
         self.model = nn.Linear(hidden_dim, 1)
         self.activation = nn.Sigmoid()
-        self.loss_fn = nn.BCEWithLogitsLoss()
+
+        #Optimizer
         self.optimizer = torch.optim.Adam(chain(self.rnn.parameters(), self.model.parameters()))
+
+        #Loss function
+        self.loss_fn = nn.BCEWithLogitsLoss()        
 
     def forward(self, x):
         _, d_last_states = self.rnn(x)
@@ -36,7 +42,9 @@ class discriminator(nn.Module):
         return y_hat_logit, y_hat
 
     def fit(self, x, x_hat):
-        """Train model"""
+        """
+        Train model on real and synthetic data and test on both to evaluate classification accuracy
+        """
         #Split data into train and test fractions
         x_train, x_test, x_hat_train, x_hat_test = train_test_split(x, x_hat, test_size=0.2)
 
@@ -78,8 +86,10 @@ class discriminator(nn.Module):
 
         return discriminative_score
 
+#Define function for computing discriminative score
 def discriminative_score_metrics(ori_data: np.ndarray, generated_data: np.ndarray, device: str):
-    """Use post-hoc RNN to classify original data and synthetic data
+    """
+    Use post-hoc RNN to classify original data and synthetic data
 
     Args:
         - ori_data: original data
