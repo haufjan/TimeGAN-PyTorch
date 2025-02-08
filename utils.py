@@ -7,8 +7,9 @@ from sklearn.utils import shuffle
 
 #Define preprocessing routine
 def preprocessing(*inputs: tuple, sequence_length: int, shuffle_stack: bool = True, random_state: int = None) -> np.ndarray:
-    """Conduct preprocessing: scale data, slice data into sequences and shuffle data stack.
-    Consistent shuffling between multiple data stacks must be performed separetaly."""
+    """
+    Conduct preprocessing: scale data, slice data into sequences and shuffle data stack
+    """
     return_list = []
     for data, bool_scale in inputs:
         #Create Minimum-Maximum scaler
