@@ -9,7 +9,9 @@ import matplotlib.pyplot as plt
 
 #Define function for dimensionaltiy reduction, transforming high-dimensional data into low-dimensional representation
 def low_dimensional_representation(data_ori: np.ndarray, data_gen: np.ndarray, technique: str) -> np.ndarray:
-    """Transform data into low-dimensional representation."""
+    """
+    Transform data into low-dimensional representation
+    """
     assert technique in ['pca', 'tsne']
 
     sample_no = min([1000, len(data_ori)])
@@ -37,11 +39,11 @@ def low_dimensional_representation(data_ori: np.ndarray, data_gen: np.ndarray, t
 
         return tsne_result[:sample_no], tsne_result[sample_no:]
 
-
-
 #Plotting function
 def plot_distribution_estimate(lowdim_data_ori: np.ndarray, lowdim_data_gen: np.ndarray, technique: str) -> None:
-    """Visualize distribution estimate via sampled data points."""
+    """
+    Visualize distribution estimate via sampled data points
+    """
     fig, ax = plt.subplots()
     #Use rasterized Line2D Artist here instead of scatter. Espacially benefitial when exporting the plot as pdf file (or other vector graphics).
     ax.add_line(mpl.lines.Line2D(lowdim_data_ori[:,0], lowdim_data_ori[:,1], ls='', marker='o', markersize=3, c = 'red', alpha = 0.2, rasterized=True, label='Original'))
