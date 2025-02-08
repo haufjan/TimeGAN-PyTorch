@@ -99,16 +99,11 @@ class Discriminator(nn.Module):
 
 
 #Define loss functions
-def discriminator_loss(y_real, y_fake, y_fake_e):
-    gamma = 1
-    valid = torch.ones_like(y_real, dtype=torch.float32, device=y_real.device, requires_grad=False)
-    fake = torch.zeros_like(y_fake, dtype=torch.float32, device=y_fake.device, requires_grad=False)
+def embedder_loss(x, x_tilde):
+    return 10*torch.sqrt(nn.MSELoss()(x_tilde, x))
 
-    d_loss_real = nn.BCEWithLogitsLoss()(y_real, valid)
-    d_loss_fake = nn.BCEWithLogitsLoss()(y_fake, fake)
-    d_loss_fake_e = nn.BCEWithLogitsLoss()(y_fake_e, fake)
-
-    return d_loss_real + d_loss_fake + d_loss_fake_e*gamma
+def supervised_loss(h, h_hat_supervise):
+    return nn.MSELoss()(h_hat_supervise[:,:-1,:], h[:,1:,:])
 
 def generator_loss(y_fake, y_fake_e, h, h_hat_supervise, x, x_hat):
     gamma = 1
@@ -128,18 +123,33 @@ def generator_loss(y_fake, y_fake_e, h, h_hat_supervise, x, x_hat):
 
     return g_loss_u + gamma*g_loss_u_e + 100*torch.sqrt(g_loss_s) + 100*g_loss_v
 
-def embedder_loss(x, x_tilde):
-    return 10*torch.sqrt(nn.MSELoss()(x_tilde, x))
+def discriminator_loss(y_real, y_fake, y_fake_e):
+    gamma = 1
+    valid = torch.ones_like(y_real, dtype=torch.float32, device=y_real.device, requires_grad=False)
+    fake = torch.zeros_like(y_fake, dtype=torch.float32, device=y_fake.device, requires_grad=False)
 
-def generator_loss_supervised(h, h_hat_supervise):
-    return nn.MSELoss()(h_hat_supervise[:,:-1,:], h[:,1:,:])
+    d_loss_real = nn.BCEWithLogitsLoss()(y_real, valid)
+    d_loss_fake = nn.BCEWithLogitsLoss()(y_fake, fake)
+    d_loss_fake_e = nn.BCEWithLogitsLoss()(y_fake_e, fake)
+
+    return d_loss_real + d_loss_fake + d_loss_fake_e*gamma
 
 
 
 #Define TimeGAN
 class TimeGAN(nn.Module):
-    def __init__(self, module_name='gru', input_features=1, hidden_dim=8, num_layers=3, epochs=1000, batch_size=128, learning_rate=1e-3, device='cpu'):
+    def __init__(self,
+                 module_name: str = 'gru',
+                 input_features: int = 1,
+                 hidden_dim: int = 8,
+                 num_layers: int = 3,
+                 epochs: int = 1000,
+                 batch_size: int = 128,
+                 learning_rate: float = 1e-3,
+                 device: str = 'cpu'):
+        
         super().__init__()
+        #Parameters
         self.module_name = module_name
         self.input_features = input_features
         self.hidden_dim = hidden_dim
@@ -149,20 +159,32 @@ class TimeGAN(nn.Module):
         self.learning_rate = learning_rate
         self.device = device
 
+        #Networks
         self.embedder = Embedder(module_name, input_features, hidden_dim, num_layers)
         self.recovery = Recovery(module_name, input_features, hidden_dim, num_layers)
         self.generator = Generator(module_name, input_features, hidden_dim, num_layers)
         self.supervisor = Supervisor(module_name, hidden_dim, num_layers)
         self.discriminator = Discriminator(module_name, hidden_dim, num_layers)
 
+        #Optimizers
         self.optimizer_e = torch.optim.Adam(chain(self.embedder.parameters(), self.recovery.parameters()), lr=learning_rate)
         self.optimizer_g = torch.optim.Adam(chain(self.generator.parameters(), self.supervisor.parameters()), lr=learning_rate)
         self.optimizer_d = torch.optim.Adam(self.discriminator.parameters(), lr=learning_rate)
 
+        #Loss functions
+        self.embedder_loss = embedder_loss
+        self.supervised_loss = supervised_loss
+        self.generator_loss = generator_loss
+        self.discriminator_loss = discriminator_loss
+
+        #Auxiliary
         self.fitting_time = None
         self.losses = []
 
     def fit(self, data_train: np.ndarray):
+        """
+        Train TimeGAN model in three subsequent training phases
+        """
         self.fitting_time = time.time()
         data_train = tensor(data_train, dtype=torch.float32, device=self.device)
 
@@ -178,7 +200,7 @@ class TimeGAN(nn.Module):
 
                 h = self.embedder(x)
                 x_tilde = self.recovery(h)
-                e_loss = embedder_loss(x, x_tilde)
+                e_loss = self.embedder_loss(x, x_tilde)
 
                 e_loss.backward()
                 self.optimizer_e.step()
@@ -205,7 +227,7 @@ class TimeGAN(nn.Module):
                 h = self.embedder(x)
                 h_hat_supervise = self.supervisor(h)
 
-                g_loss = generator_loss_supervised(h, h_hat_supervise)
+                g_loss = self.supervised_loss(h, h_hat_supervise)
 
                 g_loss.backward()
                 self.optimizer_g.step()
@@ -242,7 +264,7 @@ class TimeGAN(nn.Module):
                     y_fake = self.discriminator(h_hat)
                     y_fake_e = self.discriminator(e_hat)
 
-                    g_loss = generator_loss(y_fake, y_fake_e, h, h_hat_supervise, x, x_hat)
+                    g_loss = self.generator_loss(y_fake, y_fake_e, h, h_hat_supervise, x, x_hat)
 
                     g_loss.backward()
                     self.optimizer_g.step()
@@ -255,7 +277,7 @@ class TimeGAN(nn.Module):
                     h_hat_supervise = self.supervisor(h)
                     x_tilde = self.recovery(h)
 
-                    e_loss = embedder_loss(x, x_tilde) + 0.1*generator_loss_supervised(h, h_hat_supervise)
+                    e_loss = self.embedder_loss(x, x_tilde) + 0.1*self.supervised_loss(h, h_hat_supervise)
 
                     e_loss.backward()
                     self.optimizer_e.step()
@@ -279,7 +301,7 @@ class TimeGAN(nn.Module):
                 y_real = self.discriminator(h)
                 y_fake_e = self.discriminator(e_hat)
 
-                d_loss = discriminator_loss(y_real, y_fake, y_fake_e)
+                d_loss = self.discriminator_loss(y_real, y_fake, y_fake_e)
 
                 loss_d.append(d_loss.item())
 
@@ -302,6 +324,9 @@ class TimeGAN(nn.Module):
         print('\nElapsed Training Time: ' + time.strftime('%Hh %Mmin %Ss', time.gmtime(self.fitting_time)))
 
     def transform(self, data_shape: tuple):
+        """
+        Generate data using trained TimeGAN model
+        """
         batches_z = DataLoader(torch.rand(size=data_shape, dtype=torch.float32, device=self.device, requires_grad=False),
                                batch_size=1)
 
@@ -316,3 +341,4 @@ class TimeGAN(nn.Module):
                 generated_data.append(np.squeeze(x_hat.cpu().numpy(), axis=0))
 
         return np.stack(generated_data)
+    
