@@ -16,6 +16,7 @@ from tqdm import tqdm
 class predictor(nn.Module):
     def __init__(self, dim, hidden_dim, epochs, batch_size, device):
         super().__init__()
+        #Parameters
         self.dim = dim
         self.hidden_dim = hidden_dim
         self.num_layers = 1
@@ -23,17 +24,24 @@ class predictor(nn.Module):
         self.batch_size = batch_size
         self.device = device
 
+        #Layers
         self.rnn = nn.GRU(input_size=dim-1, hidden_size=hidden_dim, num_layers=self.num_layers, batch_first=True)
         self.model = nn.Sequential(nn.Linear(self.hidden_dim, 1), nn.Sigmoid())
-        self.loss_fn = nn.L1Loss()
+
+        #Optimizer
         self.optimizer = torch.optim.Adam(chain(self.rnn.parameters(), self.model.parameters()), 1e-3)
+
+        #Loss function
+        self.loss_fn = nn.L1Loss()
 
     def forward(self, x):
         p_outputs, _ = self.rnn(x)
         return self.model(p_outputs)
 
     def fit(self, data_train, data_test):
-        """Train model on synthetic and test on real data"""
+        """
+        Train model on synthetic and test on real data
+        """
         x_train = data_train[:,:-1,:(self.dim-1)]
         y_train = np.reshape(data_train[:,1:,(self.dim-1)], (data_train.shape[0], data_train.shape[1]-1, 1))
 
@@ -70,8 +78,10 @@ class predictor(nn.Module):
 
         return MAE
 
+#Define function for computing predictive score
 def predictive_score_metrics(ori_data: np.ndarray, generated_data: np.ndarray, device: str):
-    """Report the performance of Post-hoc RNN one-step ahead prediction.
+    """
+    Report the performance of Post-hoc RNN one-step ahead prediction
 
     Args:
         - ori_data: original data
