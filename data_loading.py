@@ -5,7 +5,9 @@ import pandas as pd
 
 #Define function for loading benchmark data sets
 def load_dataset(*files: str) -> np.array:
-    """Load benchmark data set from csv file."""
+    """
+    Load benchmark data set from csv file
+    """
     return_list = []
     for file in files:
         path = f'{file}' if file.endswith('csv') else f'{file}.csv'
@@ -32,7 +34,9 @@ def load_dataset(*files: str) -> np.array:
 
 #Define function for basic loading data from file
 def loading(*files: str) -> pd.DataFrame:
-    """Load data from csv file."""
+    """
+    Load data from csv file
+    """
     return_list = []
     for file in files:
         path = f'{file}' if file.endswith('csv') else f'{file}.csv'
