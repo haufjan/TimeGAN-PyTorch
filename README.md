@@ -32,9 +32,29 @@ py main_timegan.py --data=data/stock_data.csv --seq_len=24 --module=gru --hidden
 
 ### Results
 
-##### Stock Data
+#### Stock Data
 
-1. **Visualization**
+Results obtained from the [notebook](./timegan.ipynb).
+
+**1. Discriminative Score**
+```python
+#Compute discriminative score
+discriminative_score_metrics(data_train, data_gen, device)
+```
+100%|██████████| 2000/2000 [03:38<00:00,  9.17it/s]
+
+0.155525238744884
+
+**2. Predictive Score**
+```python
+#Compute predictive score
+predictive_score_metrics(data_train, data_gen, device)
+```
+100%|██████████| 5000/5000 [07:48<00:00, 10.67it/s]
+    
+7.276645358127833e-06
+
+**3. Visualization**
 
 <p float="left">
   <img src="../assets/pca.png" alt="PCA plot" width="400" />
