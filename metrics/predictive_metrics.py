@@ -52,17 +52,17 @@ class predictor(nn.Module):
             batches_train = DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
 
             self.train()
-            #Mini batches, Train on synthetic
+            #Mini batches, train on synthetic
             for X, Y in batches_train:
                 self.optimizer.zero_grad()
 
                 pred_train = self.forward(X)
-                loss = self.loss_fn(Y, pred_train)
+                loss = self.loss_fn(pred_train, Y)
 
                 loss.backward()
                 self.optimizer.step()
 
-        #Test the model on the original data      
+        #Test model on original data      
         x_test = data_test[:,:-1,:(self.dim-1)]
         y_test = np.reshape(data_test[:,1:,(self.dim-1)], (data_test.shape[0], data_test.shape[1]-1, 1))
 
