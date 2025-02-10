@@ -82,12 +82,15 @@ class Discriminator(nn.Module):
         super().__init__()
         assert module_name in ['gru', 'lstm']
         if module_name == 'gru':
-            self.rnn = nn.GRU(input_size=hidden_dim, hidden_size=hidden_dim, num_layers=num_layers, bidirectional=True, batch_first=True)
+            self.rnn = nn.GRU(input_size=hidden_dim, hidden_size=hidden_dim, num_layers=num_layers, bidirectional=False, batch_first=True)
         elif module_name == 'lstm':
-            self.rnn = nn.LSTM(input_size=hidden_dim, hidden_size=hidden_dim, num_layers=num_layers, bidirectional=True, batch_first=True)
+            self.rnn = nn.LSTM(input_size=hidden_dim, hidden_size=hidden_dim, num_layers=num_layers, bidirectional=False, batch_first=True)
         else:
             raise Exception()
-        self.model = nn.Linear(2*hidden_dim, 1)
+        #If bidirectional = True
+        # self.model = nn.Linear(2*hidden_dim, 1)
+        #If bidirectional = False
+        self.model = nn.Linear(hidden_dim, 1)
 
     def forward(self, x):
         seq, _ = self.rnn(x)
