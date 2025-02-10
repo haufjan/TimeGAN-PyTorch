@@ -60,8 +60,8 @@ class discriminator(nn.Module):
             for x, x_hat in batches:
                 self.optimizer.zero_grad()
 
-                y_logit_real, y_pred_real = self.forward(x)
-                y_logit_fake, y_pred_fake = self.forward(x_hat)
+                y_logit_real, _ = self.forward(x)
+                y_logit_fake, _ = self.forward(x_hat)
 
                 d_loss_real = torch.mean(self.loss_fn(y_logit_real,
                                                       torch.ones_like(y_logit_real, dtype=torch.float32, device=self.device, requires_grad=False)))
