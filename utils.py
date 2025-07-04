@@ -1,30 +1,31 @@
 import numpy as np
-import sklearn
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.utils import shuffle
 
-
-
-#Define preprocessing routine
-def preprocessing(*inputs: tuple, sequence_length: int, shuffle_stack: bool = True, random_state: int = None) -> np.ndarray:
+def preprocessing(data, sequence_length: int, use_scaling: bool = True, use_shuffling: bool = True, random_state: int = None) -> np.ndarray | tuple:
     """
     Conduct preprocessing: scale data, slice data into sequences and shuffle data stack
+    
+    Args:
+        data: Raw input data
+        sequence_length (int): Length of the sequences to be created
+        use_scaling (bool): Default = True; Apply Min-Max scaling
+        use_shuffling (bool): Default = True; Shuffle data stack
+        random_state (int): Default = None; No random state
+    Returns:
+        np.ndarray | tuple: Preprocessed data stack or tuple of data stack, max values, and min values
     """
-    return_list = []
-    for data, bool_scale in inputs:
-        #Create Minimum-Maximum scaler
-        if bool_scale:
-            scaler = MinMaxScaler().fit(data)
-            data = scaler.transform(data)
-            print('\nMaximum values:\n', scaler.data_max_, '\nMinimum values:\n', scaler.data_min_)
+    # Minimum-Maximum scaling
+    if use_scaling:
+        scaler = MinMaxScaler().fit(data)
+        data = scaler.transform(data)
+        print('\nMaximum values:\n', scaler.data_max_, '\nMinimum values:\n', scaler.data_min_)
 
-        #Create list of sequences from sliding window operation defined by sequence_length and stack to a 3-dimensional array (batch, sequence_length, feature)
-        data_stack = np.stack([data[i:i+sequence_length] for i in range(len(data) - sequence_length)])
+    # Create list of sequences defined by sequence_length and stack to a 3-dimensional array (batch, sequence_length, feature)
+    data_stack = np.stack([data[i:i+sequence_length] for i in range(len(data) - sequence_length)])
 
-        if shuffle_stack:
-            #In TimeGAN code the data set is mixed to make it similar to independent and identically distributed (iid)
-            data_stack = shuffle(data_stack, random_state=random_state)
+    if use_shuffling:
+        # In TimeGAN code the data set is mixed to make it similar to independent and identically distributed (iid)
+        data_stack = shuffle(data_stack, random_state=random_state)
 
-        return_list.extend([data_stack, scaler.data_max_, scaler.data_min_]) if bool_scale else return_list.extend([data_stack])
-
-    return return_list if len(return_list) > 1 else return_list.pop()
+    return (data_stack, scaler.data_max_, scaler.data_min_) if use_scaling else data_stack

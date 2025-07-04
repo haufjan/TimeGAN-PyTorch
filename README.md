@@ -14,11 +14,11 @@ Original Codebase: https://github.com/jsyoon0823/TimeGAN.git
 ### Version Notes
 The model was implemented and tested using `Python==3.11.9`. Further, the following modules were utilized (see [Requirements File](./requirements.txt)):
 ```
-matplotlib==3.10.0
-numpy==2.2.1
-pandas==2.2.3
-scikit-learn==1.6.0
-torch==2.5.1
+matplotlib==3.10.3
+numpy==2.3.1
+pandas==2.3.0
+scikit-learn==1.7.0
+torch==2.7.1
 tqdm==4.67.1
 ```
 
@@ -41,18 +41,18 @@ Results obtained from the [notebook](./timegan.ipynb).
 #Compute discriminative score
 discriminative_score_metrics(data_train, data_gen, device)
 ```
-100%|██████████| 2000/2000 [03:38<00:00,  9.17it/s]
-
-0.155525238744884
+100%|██████████| 2000/2000 [03:17<00:00, 10.10it/s]
+    
+0.23260572987721695
 
 **2. Predictive Score**
 ```python
 #Compute predictive score
 predictive_score_metrics(data_train, data_gen, device)
 ```
-100%|██████████| 5000/5000 [07:48<00:00, 10.67it/s]
+100%|██████████| 5000/5000 [07:20<00:00, 11.35it/s]
     
-7.276645358127833e-06
+0.04312044765531347
 
 **3. Visualization**
 

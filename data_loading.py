@@ -1,45 +1,29 @@
 import numpy as np
 import pandas as pd
 
-
-
-#Define function for loading benchmark data sets
-def load_dataset(*files: str) -> np.array:
+def load_dataset(file_path: str) -> np.ndarray:
     """
-    Load benchmark data set from csv file
+    Load benchmark data set from CSV file
     """
-    return_list = []
-    for file in files:
-        path = f'{file}' if file.endswith('csv') else f'{file}.csv'
-        if path.endswith('stock_data.csv'):
-            #Flip data for chronological order
-            data = np.asarray(pd.read_csv(path))[::-1]
-        elif path.endswith('energy_data.csv'):
-            data = np.asarray(pd.read_csv(path))
-        else:
-            #Sine signal
-            temp = []
-            for k in range(5):
-                #Randomly drawn frequency and phase
-                freq = np.random.uniform(0, 0.1)
-                phase = np.random.uniform(0, 0.1)
+    file_path = file_path if file_path.endswith('csv') else file_path + '.csv'
+    if file_path.endswith(('stock_data.csv', 'energy_data.csv')):
+        # Flip data for chronological order
+        benchmark_data = np.asarray(pd.read_csv(file_path))[::-1]  
+    else:
+        rng = np.random.default_rng(seed=42)              
+        sine_signal = []
+        for _ in range(5):
+            # Randomly drawn frequency and phase
+            frequency = rng.uniform(0, 0.1)
+            phase = rng.uniform(0, 0.1)
+            sine_signal.append([np.sin(frequency * j + phase) for j in range(10000)])
 
-                temp.append([np.sin(freq*j + phase) for j in range(10000)])               
-
-            data = np.stack(np.transpose(np.asarray(temp)))
-
-        return_list.extend([data])
+        benchmark_data = np.stack(np.transpose(np.asarray(sine_signal)))
     
-    return return_list if len(return_list) > 1 else return_list.pop()
+    return benchmark_data
 
-#Define function for basic loading data from file
-def loading(*files: str) -> pd.DataFrame:
+def load_from_csv(file_path: str) -> pd.DataFrame:
     """
-    Load data from csv file
+    Load data from a CSV file into a pandas DataFrame
     """
-    return_list = []
-    for file in files:
-        path = f'{file}' if file.endswith('csv') else f'{file}.csv'
-        return_list.extend([pd.read_csv(path)])
-
-    return return_list if len(return_list) > 1 else return_list.pop()
+    return pd.read_csv(file_path if file_path.endswith('csv') else file_path + '.csv')

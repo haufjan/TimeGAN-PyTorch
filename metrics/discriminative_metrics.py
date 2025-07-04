@@ -1,22 +1,32 @@
-import itertools
 from itertools import chain
 import numpy as np
 import torch
 from torch import nn, tensor
 from torch.utils.data import DataLoader, TensorDataset
-import sklearn
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
-import tqdm
 from tqdm import tqdm
 
-
-
-#Define post-hoc discriminator
-class discriminator(nn.Module):
-    def __init__(self, input_features, hidden_dim, epochs, batch_size, device):
+class Discriminator(nn.Module):
+    """
+    Post-hoc discriminator for TimeGAN
+    """
+    def __init__(self,
+                 input_features: int,
+                 hidden_dim: int,
+                 epochs: int = 2000,
+                 batch_size: int = 128,
+                 device: str = 'cpu'):
+        """
+        Args:
+            input_features (int): Number of input features
+            hidden_dim (int): Dimension of the hidden layer
+            epochs (int): Number of epochs for training
+            batch_size (int): Batch size for training
+            device (str): Device to use for training ('cpu' or 'cuda')
+        """
         super().__init__()
-        #Parameters
+        # Attributes
         self.input_features = input_features
         self.hidden_dim = hidden_dim
         self.num_layers = 1
@@ -24,36 +34,38 @@ class discriminator(nn.Module):
         self.batch_size = batch_size
         self.device = device
 
-        #Layers
+        # Layers
         self.rnn = nn.GRU(input_size=input_features, hidden_size=hidden_dim, num_layers=self.num_layers, batch_first=True)
         self.model = nn.Linear(hidden_dim, 1)
         self.activation = nn.Sigmoid()
 
-        #Optimizer
+        # Optimizer
         self.optimizer = torch.optim.Adam(chain(self.rnn.parameters(), self.model.parameters()))
 
-        #Loss function
+        # Loss function
         self.loss_fn = nn.BCEWithLogitsLoss()        
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         _, d_last_states = self.rnn(x)
         y_hat_logit = self.model(torch.swapaxes(d_last_states, 0, 1))
         y_hat = self.activation(y_hat_logit)
         return y_hat_logit, y_hat
 
-    def fit(self, x, x_hat):
+    def fit(self, x: torch.Tensor, x_hat: torch.Tensor) -> float:
         """
         Train model on real and synthetic data and test on both to evaluate classification accuracy
         """
-        #Split data into train and test fractions
+        # Split data into train and test fractions
         x_train, x_test, x_hat_train, x_hat_test = train_test_split(x, x_hat, test_size=0.2)
 
-        x_train, x_hat_train = tensor(x_train, dtype=torch.float32, device=self.device), tensor(x_hat_train, dtype=torch.float32, device=self.device)
+        x_train = tensor(x_train, dtype=torch.float32, device=self.device)
+        x_hat_train = tensor(x_hat_train, dtype=torch.float32, device=self.device)
         dataset_train = TensorDataset(x_train, x_hat_train)
 
-        x_test, x_hat_test = tensor(x_test, dtype=torch.float32, device=self.device, requires_grad=False), tensor(x_hat_test, dtype=torch.float32, device=self.device, requires_grad=False)
+        x_test = tensor(x_test, dtype=torch.float32, device=self.device, requires_grad=False)
+        x_hat_test = tensor(x_hat_test, dtype=torch.float32, device=self.device, requires_grad=False)
 
-        for itt in tqdm(range(self.epochs)):
+        for _ in tqdm(range(self.epochs)):
             batches = DataLoader(dataset_train, batch_size=self.batch_size, shuffle=True)
 
             self.train()
@@ -82,30 +94,25 @@ class discriminator(nn.Module):
             y_label_final = np.concatenate((np.ones([len(y_pred_real,)]), np.zeros([len(y_pred_fake,)])), axis=0)
 
             acc = accuracy_score(y_label_final, (y_pred_final > 0.5))
-            discriminative_score = np.abs(0.5 - acc)
+            discriminative_score = abs(0.5 - acc)
 
         return discriminative_score
 
-#Define function for computing discriminative score
 def discriminative_score_metrics(ori_data: np.ndarray, generated_data: np.ndarray, device: str):
     """
     Use post-hoc RNN to classify original data and synthetic data
-
-    Args:
-        - ori_data: original data
-        - generated_data: generated synthetic data
-
-    Returns:
-        - discriminative_score: np.abs(classification accuracy - 0.5)
     """
-    no, seq_len, dim = ori_data.shape
+    # no, seq_len, dim
+    _, _, dim = ori_data.shape
 
     hidden_dim = int(dim/2)
     iterations = 2000
     batch_size = 128
 
-    model = discriminator(input_features=dim, hidden_dim=hidden_dim, epochs=iterations, batch_size=batch_size, device=device).to(device)
+    # Instantiate discriminator model
+    model = Discriminator(input_features=dim, hidden_dim=hidden_dim, epochs=iterations, batch_size=batch_size, device=device).to(device)
 
+    # Train model and compute discriminative score
     discriminative_score = model.fit(ori_data, generated_data)
 
     return discriminative_score
