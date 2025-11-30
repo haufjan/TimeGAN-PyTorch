@@ -1,7 +1,7 @@
 from itertools import chain
 import numpy as np
 import torch
-from torch import nn, tensor
+from torch import nn, tensor, Tensor
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.metrics import mean_absolute_error
 from tqdm import tqdm
@@ -44,7 +44,7 @@ class Predictor(nn.Module):
         # Loss function
         self.loss_fn = nn.L1Loss()
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         p_outputs, _ = self.rnn(x)
         return self.model(p_outputs)
 

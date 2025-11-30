@@ -1,8 +1,8 @@
-import time
+from time import gmtime, strftime, time
 from itertools import chain
 import numpy as np
 import torch
-from torch import nn, tensor
+from torch import nn, tensor, Tensor
 from torch.utils.data import DataLoader, TensorDataset
 
 # Define TimeGAN's recurrent neural networks
@@ -19,7 +19,7 @@ class Embedder(nn.Module):
         self.model = nn.Sequential(nn.Linear(hidden_dim, hidden_dim),
                                    nn.Sigmoid())
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         seq, _ = self.rnn(x)
         return self.model(seq)
 
@@ -36,7 +36,7 @@ class Recovery(nn.Module):
         self.model = nn.Sequential(nn.Linear(hidden_dim, input_features),
                                    nn.Sigmoid())
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         seq, _ = self.rnn(x)
         return self.model(seq)
 
@@ -53,7 +53,7 @@ class Generator(nn.Module):
         self.model = nn.Sequential(nn.Linear(hidden_dim, hidden_dim),
                                    nn.Sigmoid())
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         seq, _ = self.rnn(x)
         return self.model(seq)
 
@@ -70,7 +70,7 @@ class Supervisor(nn.Module):
         self.model = nn.Sequential(nn.Linear(hidden_dim, hidden_dim),
                                    nn.Sigmoid())
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         seq, _ = self.rnn(x)
         return self.model(seq)
 
@@ -89,23 +89,23 @@ class Discriminator(nn.Module):
         # If bidirectional = False
         self.model = nn.Linear(hidden_dim, 1)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         seq, _ = self.rnn(x)
         return self.model(seq)
 
 # Define loss functions
-def embedder_loss(x: torch.Tensor, x_tilde: torch.Tensor) -> torch.Tensor:
+def embedder_loss(x: Tensor, x_tilde: Tensor) -> Tensor:
     return 10*torch.sqrt(nn.MSELoss()(x_tilde, x))
 
-def supervised_loss(h: torch.Tensor, h_hat_supervise: torch.Tensor) -> torch.Tensor:
+def supervised_loss(h: Tensor, h_hat_supervise: Tensor) -> Tensor:
     return nn.MSELoss()(h_hat_supervise[:,:-1,:], h[:,1:,:])
 
-def generator_loss(y_fake: torch.Tensor,
-                   y_fake_e: torch.Tensor,
-                   h: torch.Tensor,
-                   h_hat_supervise: torch.Tensor,
-                   x: torch.Tensor,
-                   x_hat: torch.Tensor) -> torch.Tensor:
+def generator_loss(y_fake: Tensor,
+                   y_fake_e: Tensor,
+                   h: Tensor,
+                   h_hat_supervise: Tensor,
+                   x: Tensor,
+                   x_hat: Tensor) -> Tensor:
     gamma = 1
     fake = torch.ones_like(y_fake, dtype=torch.float32, device=y_fake.device, requires_grad=False)
 
@@ -123,7 +123,7 @@ def generator_loss(y_fake: torch.Tensor,
 
     return g_loss_u + gamma*g_loss_u_e + 100*torch.sqrt(g_loss_s) + 100*g_loss_v
 
-def discriminator_loss(y_real: torch.Tensor, y_fake: torch.Tensor, y_fake_e: torch.Tensor) -> torch.Tensor:
+def discriminator_loss(y_real: Tensor, y_fake: Tensor, y_fake_e: Tensor) -> Tensor:
     gamma = 1
     valid = torch.ones_like(y_real, dtype=torch.float32, device=y_real.device, requires_grad=False)
     fake = torch.zeros_like(y_fake, dtype=torch.float32, device=y_fake.device, requires_grad=False)
@@ -197,7 +197,7 @@ class TimeGAN(nn.Module):
         """
         Train TimeGAN model in three subsequent training phases
         """
-        self.fitting_time = time.time()
+        self.fitting_time = time()
         data_train = tensor(data_train, dtype=torch.float32, device=self.device)
 
         # 1. Embedding network training
@@ -325,9 +325,9 @@ class TimeGAN(nn.Module):
                       '| loss_e', f'{np.mean(loss_e):12.9f}',
                       '| loss_d', f'{np.mean(loss_d):12.9f}')
 
-        self.fitting_time = np.round(time.time() - self.fitting_time, 3)
+        self.fitting_time = np.round(time() - self.fitting_time, 3)
         print('Finished Joint Training\n')
-        print('\nElapsed Training Time:', time.strftime('%Hh %Mmin %Ss', time.gmtime(self.fitting_time)), '\n')
+        print('\nElapsed Training Time:', strftime('%Hh %Mmin %Ss', gmtime(self.fitting_time)), '\n')
 
     def transform(self, data_shape: tuple) -> np.ndarray:
         """

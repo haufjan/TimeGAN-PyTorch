@@ -1,7 +1,7 @@
 from itertools import chain
 import numpy as np
 import torch
-from torch import nn, tensor
+from torch import nn, tensor, Tensor
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
@@ -45,13 +45,13 @@ class Discriminator(nn.Module):
         # Loss function
         self.loss_fn = nn.BCEWithLogitsLoss()        
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         _, d_last_states = self.rnn(x)
         y_hat_logit = self.model(torch.swapaxes(d_last_states, 0, 1))
         y_hat = self.activation(y_hat_logit)
         return y_hat_logit, y_hat
 
-    def fit(self, x: torch.Tensor, x_hat: torch.Tensor) -> float:
+    def fit(self, x: np.ndarray, x_hat: np.ndarray) -> float:
         """
         Train model on real and synthetic data and test on both to evaluate classification accuracy
         """

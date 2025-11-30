@@ -14,11 +14,11 @@ Original Codebase: https://github.com/jsyoon0823/TimeGAN.git
 ### Version Notes
 The model was implemented and tested using `Python==3.11.9`. Further, the following modules were utilized (see [Requirements File](./requirements.txt)):
 ```
-matplotlib==3.10.3
-numpy==2.3.1
-pandas==2.3.0
-scikit-learn==1.7.0
-torch==2.7.1
+matplotlib==3.10.7
+numpy==2.3.5
+pandas==2.3.3
+scikit-learn==1.7.2
+torch==2.9.1
 tqdm==4.67.1
 ```
 
@@ -38,25 +38,24 @@ Results obtained from the [notebook](./timegan.ipynb).
 
 **1. Discriminative Score**
 ```python
-#Compute discriminative score
+# Compute discriminative score
 discriminative_score_metrics(data_train, data_gen, device)
 ```
-100%|██████████| 2000/2000 [03:17<00:00, 10.10it/s]
+100%|██████████| 2000/2000 [03:12<00:00, 10.38it/s]
     
-0.23260572987721695
+0.1589358799454298
 
 **2. Predictive Score**
 ```python
-#Compute predictive score
+# Compute predictive score
 predictive_score_metrics(data_train, data_gen, device)
 ```
-100%|██████████| 5000/5000 [07:20<00:00, 11.35it/s]
+100%|██████████| 5000/5000 [07:03<00:00, 11.81it/s]
     
-0.04312044765531347
+0.039960835604986686
 
 **3. Visualization**
-
 <p float="left">
   <img src="../assets/pca.png" alt="PCA plot" width="400" />
-  <img src="../assets/tsne.png" alt=="TSNE plot" width="400" />
+  <img src="../assets/tsne.png" alt="TSNE plot" width="400" />
 </p>
